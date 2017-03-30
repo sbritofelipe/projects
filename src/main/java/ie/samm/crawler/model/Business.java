@@ -3,18 +3,18 @@
  */
 package ie.samm.crawler.model;
 
-import java.io.Serializable;
-
 /**
  * @author Felipe
  *
  */
-public class Business implements Serializable{
+public class Business extends Entity{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private Long id;
 	
 	private String category;
 
@@ -37,6 +37,20 @@ public class Business implements Serializable{
 		this.email = email;
 	}
 	
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
 	/**
 	 * @return the company
 	 */

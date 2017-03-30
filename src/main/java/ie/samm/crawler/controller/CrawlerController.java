@@ -1,11 +1,9 @@
 package ie.samm.crawler.controller;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
@@ -15,18 +13,14 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import ie.samm.crawler.model.Business;
-import ie.samm.crawler.model.WebsiteEnum;
+import ie.samm.crawler.model.Category;
+import ie.samm.crawler.model.enumetaror.WebsiteEnum;
 import ie.samm.crawler.service.impl.CrawlerService;
 
 @ManagedBean(name = "crawlerController")
 @ViewScoped
-public class CrawlerController implements Serializable{
+public class CrawlerController extends AbstractController{
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
 	@ManagedProperty("#{crawlerService}")
 	private CrawlerService crawlerService;
 	
@@ -34,9 +28,7 @@ public class CrawlerController implements Serializable{
 	
 	private List<Business> businesses;
 	
-	private LinkedHashMap<String, String> categories;
-	
-	private LinkedHashMap<String, String> subCategories;
+	private HashSet<Category> categories;
 	
 	private SelectItem category;
 	
@@ -46,16 +38,11 @@ public class CrawlerController implements Serializable{
 		try {
 			if (WebsiteEnum.GOLDEN_PAGES.getId().equals(page)) {
 				url = WebsiteEnum.GOLDEN_PAGES.getAddress();
-				this.categories = new LinkedHashMap<String, String>();
-				this.subCategories = new LinkedHashMap<String, String>();
-				this.categories.putAll(crawlerService.searchCategories(url));
-//				this.subCategories.putAll(crawlerService.searchSubcategories(this.categories));
+				this.setCategories(new HashSet<Category>());
+				this.getCategories().addAll(crawlerService.searchCategories(url));
 			}
-//			this.businesses = new ArrayList<Business>();
-//			this.businesses.addAll(crawlerService.searchBusinessInfo(url));
-//			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found."));
 		} catch (IOException e) {
-			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error."));
+			addErrorMessage("Error.");
 		}
 	}
 	
@@ -68,18 +55,8 @@ public class CrawlerController implements Serializable{
 			this.businesses.addAll(crawlerService.searchBusinessInfo(url));
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found."));
 		} catch (IOException e) {
-			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error."));
+			addErrorMessage("Error.");
 		}
-	}
-
-	public List<SelectItem> getCategoriesItems(){
-		List<SelectItem> items = new ArrayList<SelectItem>();
-		if(getCategories() != null){
-			for (Entry<String, String> category : getCategories().entrySet()) {
-				items.add(new SelectItem(category.getKey(), category.getValue()));
-			}
-		}
-		return items;
 	}
 	
 	// GETTERS AND SETTERS
@@ -105,38 +82,31 @@ public class CrawlerController implements Serializable{
 		this.businesses = businesses;
 	}
 
+
 	/**
 	 * @return the categories
 	 */
-	public LinkedHashMap<String, String> getCategories() {
+	public HashSet<Category> getCategories() {
 		return categories;
 	}
 
 	/**
 	 * @param categories the categories to set
 	 */
-	public void setCategories(LinkedHashMap<String, String> categories) {
+	public void setCategories(HashSet<Category> categories) {
 		this.categories = categories;
 	}
 
 	/**
-	 * @return the subCategories
+	 * @return the crawlerservice
 	 */
-	public LinkedHashMap<String, String> getSubCategories() {
-		return subCategories;
-	}
-
-	/**
-	 * @param subCategories the subCategories to set
-	 */
-	public void setSubCategories(LinkedHashMap<String, String> subCategories) {
-		this.subCategories = subCategories;
-	}
-
 	public CrawlerService getCrawlerService() {
 		return crawlerService;
 	}
 
+	/**
+	 * @param crawlerService
+	 */
 	public void setCrawlerService(CrawlerService crawlerService) {
 		this.crawlerService = crawlerService;
 	}

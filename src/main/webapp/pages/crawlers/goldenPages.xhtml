@@ -5,18 +5,20 @@
 	xmlns:p="http://primefaces.org/ui">
 
 	<p:dialog widgetVar="goldenPages" closable="true" id="dlgGoldenPages" modal="true" height="500" width="900" header="Golden Pages">
-		<h:form>
-			<p:fieldset>
+		<h:form id="goldenPagesForm">
+			<p:fieldset id="goldenPagesFds">
 				<h3>Filters</h3>
 				<h:panelGroup id="filtersPanel">
 					<p:outputLabel value="Categories: " for="categories"/>
 					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 200px">
-						<f:selectItems value="#{crawlerController.categoriesItems}" var="item" itemLabel="#{item.label}" itemValue="#{item}" noSelectionOption="-- All categories --"/>
+						<f:selectItem itemLabel="-- All categories --" itemValue=""/>
+						<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
+						<f:converter converterId="categoryConverter"/>
 					</p:selectOneMenu>
 				</h:panelGroup>
 			</p:fieldset>
 			<div style="height: 50px; text-align: right; padding-top: 5px;">
-				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update="#{p.component('tablePanel')}"/>
+				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update=":goldenPagesForm:tablePanel" process=":goldenPagesForm:filtersPanel"/>
 			</div>
 			<p:fieldset id="tablePanel" legend="Businesses">
 				<p:dataTable id="businesses" value="#{crawlerController.businesses}"

@@ -4,11 +4,13 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
 
 import ie.samm.crawler.model.Business;
+import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.util.Constants;
 import ie.samm.crawler.service.Crawler;
 
@@ -58,17 +60,23 @@ public class CrawlerService {
 		return businesses;
 	}
 	
-	public LinkedHashMap<String, String> searchCategories(String url) throws IOException {
+	public HashSet<Category> searchCategories(String url) throws IOException {
 		Crawler crawler = new Crawler();
-		LinkedHashMap<String, String> categories = (LinkedHashMap<String, String>) crawler.crawl(url, 0);
+		HashSet<Category> categories = new HashSet<Category>();
+		LinkedHashMap<String, String> dataCategories = (LinkedHashMap<String, String>) crawler.crawl(url, 0);
+		for (Entry<String, String> dataCat : dataCategories.entrySet()) {
+			Category category = new Category(dataCat.getValue(), dataCat.getKey());
+			category.setSubcategories(searchSubcategories(category));
+			categories.add(category);
+		}
 		return categories;
 	}
 	
-	public LinkedHashMap<String, String> searchSubcategories(LinkedHashMap<String, String> categories) throws IOException{
-		LinkedHashMap<String, String> subCategories = new LinkedHashMap<String, String>();
-		for (Map.Entry<String, String> category : categories.entrySet()) {
-			subCategories.putAll((LinkedHashMap<String, String>) crawler.crawl(category.getKey(), 1));
-			break;
+	public HashSet<Category> searchSubcategories(Category category) throws IOException{
+		HashSet<Category> subCategories = new HashSet<Category>();
+		LinkedHashMap<String, String> hashMap = (LinkedHashMap<String, String>) crawler.crawl(category.getUrl(), 1);
+		for (Entry<String,String> subcat : hashMap.entrySet()) {
+			subCategories.add(new Category(subcat.getValue(), subcat.getKey()));
 		}
 		
 		return subCategories;

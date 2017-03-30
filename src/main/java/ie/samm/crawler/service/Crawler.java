@@ -58,7 +58,8 @@ public class Crawler {
 		Elements linksOnPage = new Elements(); 
 		switch (layer) {
 		case 0:
-			linksOnPage = this.htmlDocument.body().select("li:contains(Categories)").nextAll().select("a[href]");
+			linksOnPage.addAll(this.htmlDocument.body().select("li:contains(Categories)").nextAll().select("a[href]"));
+			linksOnPage.addAll(this.htmlDocument.body().select("ul.no-header").select("a[href]"));
 			System.out.println(linksOnPage.size() + " categories found.");
 			break;
 		

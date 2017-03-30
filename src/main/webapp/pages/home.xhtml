@@ -15,7 +15,7 @@
 						<p:fieldset legend="Search">
 							<p:commandButton value="Golden Pages"
 								action="#{crawlerController.initSearch(1)}"
-								oncomplete="PF('goldenPages').show()" update="filtersPanel"></p:commandButton>
+								oncomplete="PF('goldenPages').show()" update=":goldenPagesForm:filtersPanel"></p:commandButton>
 						</p:fieldset>
 					</p:outputPanel>
 				</h:form>

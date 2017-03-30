@@ -1,4 +1,4 @@
-package ie.samm.crawler.model;
+package ie.samm.crawler.model.enumetaror;
 
 public enum WebsiteEnum {
 
