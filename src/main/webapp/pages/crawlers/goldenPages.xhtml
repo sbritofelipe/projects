@@ -10,10 +10,9 @@
 				<h3>Filters</h3>
 				<h:panelGroup id="filtersPanel">
 					<p:outputLabel value="Categories: " for="categories"/>
-					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 200px">
+					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 200px" converter="#{categoryConverter}">
 						<f:selectItem itemLabel="-- All categories --" itemValue=""/>
 						<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
-						<f:converter converterId="categoryConverter"/>
 					</p:selectOneMenu>
 				</h:panelGroup>
 			</p:fieldset>

@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
@@ -30,9 +27,9 @@ public class CrawlerController extends AbstractController{
 	
 	private HashSet<Category> categories;
 	
-	private SelectItem category;
+	private Category category;
 	
-	private SelectItem subcategory;
+	private Category subcategory;
 	
 	public void initSearch(int page){
 		try {
@@ -41,6 +38,7 @@ public class CrawlerController extends AbstractController{
 				this.setCategories(new HashSet<Category>());
 				this.getCategories().addAll(crawlerService.searchCategories(url));
 			}
+			addSuccessMessage(getCategories().size() + " categories found.");
 		} catch (IOException e) {
 			addErrorMessage("Error.");
 		}
@@ -53,7 +51,7 @@ public class CrawlerController extends AbstractController{
 			}
 			this.businesses = new ArrayList<Business>();
 			this.businesses.addAll(crawlerService.searchBusinessInfo(url));
-			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found."));
+			addSuccessMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found.");
 		} catch (IOException e) {
 			addErrorMessage("Error.");
 		}
@@ -114,28 +112,28 @@ public class CrawlerController extends AbstractController{
 	/**
 	 * @return the category
 	 */
-	public SelectItem getCategory() {
+	public Category getCategory() {
 		return category;
 	}
 
 	/**
 	 * @param category the category to set
 	 */
-	public void setCategory(SelectItem category) {
+	public void setCategory(Category category) {
 		this.category = category;
 	}
 
 	/**
 	 * @return the subcategory
 	 */
-	public SelectItem getSubcategory() {
+	public Category getSubcategory() {
 		return subcategory;
 	}
 
 	/**
 	 * @param subcategory the subcategory to set
 	 */
-	public void setSubcategory(SelectItem subcategory) {
+	public void setSubcategory(Category subcategory) {
 		this.subcategory = subcategory;
 	}
 	

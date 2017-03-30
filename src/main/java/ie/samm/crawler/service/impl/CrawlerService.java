@@ -66,7 +66,6 @@ public class CrawlerService {
 		LinkedHashMap<String, String> dataCategories = (LinkedHashMap<String, String>) crawler.crawl(url, 0);
 		for (Entry<String, String> dataCat : dataCategories.entrySet()) {
 			Category category = new Category(dataCat.getValue(), dataCat.getKey());
-			category.setSubcategories(searchSubcategories(category));
 			categories.add(category);
 		}
 		return categories;
