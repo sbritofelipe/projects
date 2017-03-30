@@ -1,0 +1,74 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+	<p:dialog widgetVar="goldenPages" closable="true" id="dlgGoldenPages" modal="true" height="500" width="900" header="Golden Pages">
+		<h:form>
+			<p:fieldset>
+				<h3>Filters</h3>
+				<h:panelGroup id="filtersPanel">
+					<p:outputLabel value="Categories: " for="categories"/>
+					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 200px">
+						<f:selectItems value="#{crawlerController.categoriesItems}" var="item" itemLabel="#{item.label}" itemValue="#{item}" noSelectionOption="-- All categories --"/>
+					</p:selectOneMenu>
+				</h:panelGroup>
+			</p:fieldset>
+			<div style="height: 50px; text-align: right; padding-top: 5px;">
+				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update="#{p.component('tablePanel')}"/>
+			</div>
+			<p:fieldset id="tablePanel" legend="Businesses">
+				<p:dataTable id="businesses" value="#{crawlerController.businesses}"
+					var="business" emptyMessage="No businesses found." paginator="true"
+					rows="10" paginatorPosition="bottom" rowsPerPageTemplate="5,10,15"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}">
+
+					<f:facet name="{Exporters}">
+						<h:commandLink>
+							<p:graphicImage url="/images/csv.png" width="24" />
+							<p:dataExporter type="csv" target="businesses"
+								fileName="businesses" />
+						</h:commandLink>
+					</f:facet>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Category" />
+						</f:facet>
+						<h:outputText value="#{business.category}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Company" />
+						</f:facet>
+						<h:outputText value="#{business.company}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Phone" />
+						</f:facet>
+						<h:outputText value="#{business.phone}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Address" />
+						</f:facet>
+						<h:outputText value="#{business.address}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Mobile" />
+						</f:facet>
+						<h:outputText value="#{business.mobile}" />
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Email" />
+						</f:facet>
+						<h:outputText value="#{business.email}" />
+					</p:column>
+				</p:dataTable>
+			</p:fieldset>
+		</h:form>
+	</p:dialog>
+</ui:composition>
