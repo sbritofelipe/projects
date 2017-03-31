@@ -133,6 +133,11 @@ public class Business extends Entity{
 		this.category = category;
 	}
 
+	@Override
+	public String toString() {
+		return "Business information:\n" + "Name: " + getCompany() + "\nCategory: " + getCategory() + "\nAddress: " + getAddress() + "\nPhone: " + getPhone() + "\nMobile: " + getMobile() +"\nEmail: " + getEmail();
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -140,7 +145,13 @@ public class Business extends Entity{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result + ((category == null) ? 0 : category.hashCode());
+		result = prime * result + ((company == null) ? 0 : company.hashCode());
+		result = prime * result + ((email == null) ? 0 : email.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((mobile == null) ? 0 : mobile.hashCode());
+		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
 		return result;
 	}
 
@@ -159,6 +170,34 @@ public class Business extends Entity{
 			return false;
 		}
 		Business other = (Business) obj;
+		if (address == null) {
+			if (other.address != null) {
+				return false;
+			}
+		} else if (!address.equals(other.address)) {
+			return false;
+		}
+		if (category == null) {
+			if (other.category != null) {
+				return false;
+			}
+		} else if (!category.equals(other.category)) {
+			return false;
+		}
+		if (company == null) {
+			if (other.company != null) {
+				return false;
+			}
+		} else if (!company.equals(other.company)) {
+			return false;
+		}
+		if (email == null) {
+			if (other.email != null) {
+				return false;
+			}
+		} else if (!email.equals(other.email)) {
+			return false;
+		}
 		if (id == null) {
 			if (other.id != null) {
 				return false;
@@ -166,12 +205,21 @@ public class Business extends Entity{
 		} else if (!id.equals(other.id)) {
 			return false;
 		}
+		if (mobile == null) {
+			if (other.mobile != null) {
+				return false;
+			}
+		} else if (!mobile.equals(other.mobile)) {
+			return false;
+		}
+		if (phone == null) {
+			if (other.phone != null) {
+				return false;
+			}
+		} else if (!phone.equals(other.phone)) {
+			return false;
+		}
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "Business information:\n" + "Name: " + getCompany() + "\nCategory: " + getCategory() + "\nAddress: " + getAddress() + "\nPhone: " + getPhone() + "\nMobile: " + getMobile() +"\nEmail: " + getEmail();
 	}
 	
 }

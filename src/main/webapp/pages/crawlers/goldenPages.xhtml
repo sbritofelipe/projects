@@ -9,16 +9,28 @@
 			<p:fieldset id="goldenPagesFds">
 				<h3>Filters</h3>
 				<h:panelGrid id="filtersPanel" columns="2">
-					<p:outputLabel value="Categories: " for="categories"/>
-					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 280px">
-						<f:selectItem itemLabel="-- All categories --" noSelectionOption="true"/>
-						<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
-						<f:converter converterId="categoryConverter"/>
-					</p:selectOneMenu>
+					<h:panelGrid id="gridCategoryPanel" columns="2">
+						<p:outputLabel value="Categories: " for="categories"/>
+						<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 280px">
+							<f:selectItem itemLabel="-- All categories --" noSelectionOption="true"/>
+							<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
+							<f:converter converterId="categoryConverter"/>
+							<p:ajax event="change" listener="#{crawlerController.initSubcategories}" update=":goldenPagesForm:gridSubcategoryPanel"/>
+						</p:selectOneMenu>
+					</h:panelGrid>
+					
+					<h:panelGrid id="gridSubcategoryPanel" columns="2">
+						<p:outputLabel value="Subcategories: " for="subcategories"/>
+						<p:selectOneMenu id="subcategories" value="#{crawlerController.subcategory}" style="width: 280px">
+							<f:selectItem itemLabel="-- All subcategories --" noSelectionOption="true"/>
+							<f:selectItems value="#{crawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
+							<f:converter converterId="categoryConverter"/>
+						</p:selectOneMenu>
+					</h:panelGrid>
 				</h:panelGrid>
 			</p:fieldset>
 			<div style="height: 50px; text-align: right; padding-top: 5px;">
-				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update=":goldenPagesForm:tablePanel"/>
+				<p:commandButton value="Search" action="#{crawlerController.search}" update=":goldenPagesForm:tablePanel"/>
 			</div>
 			<p:fieldset id="tablePanel" legend="Businesses">
 				<p:dataTable id="businesses" value="#{crawlerController.businesses}"

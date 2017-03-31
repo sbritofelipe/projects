@@ -28,6 +28,8 @@ public class CrawlerController extends AbstractController{
 	
 	private HashSet<Category> categories;
 	
+	private HashSet<Category> subcategories;
+	
 	private Category category;
 	
 	private Category subcategory;
@@ -47,12 +49,24 @@ public class CrawlerController extends AbstractController{
 		}
 	}
 	
-	public void search(int page){
+	public void initSubcategories(){
+		try {
+			this.subcategories = getCategory() != null? crawlerService.findCategories(getCategory().getUrl(), true) : null;
+		} catch (IOException e) {
+			addErrorMessage("Error.");
+		}
+	}
+	
+	public void search(){
 		try {
 			this.businesses = new ArrayList<Business>();
 			HashSet<Category> categories = new HashSet<Category>();
-			if(category != null){
-				categories.add(category);
+			if(this.category != null){
+				if(this.subcategory != null){
+					this.category.setSubcategories(new HashSet<Category>());
+					this.category.getSubcategories().add(this.subcategory);
+				}
+				categories.add(this.category);
 			}else{
 				categories.addAll(categories);
 			}
@@ -99,6 +113,20 @@ public class CrawlerController extends AbstractController{
 	 */
 	public void setCategories(HashSet<Category> categories) {
 		this.categories = categories;
+	}
+
+	/**
+	 * @return the subcategories
+	 */
+	public HashSet<Category> getSubcategories() {
+		return subcategories;
+	}
+
+	/**
+	 * @param subcategories the subcategories to set
+	 */
+	public void setSubcategories(HashSet<Category> subcategories) {
+		this.subcategories = subcategories;
 	}
 
 	/**

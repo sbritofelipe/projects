@@ -48,18 +48,14 @@ public class CrawlerService {
 		if(!subcategory){
 			linksOnPage.addAll(this.htmlDocument.body().select("li:contains(Categories)").nextAll().select("a[href]"));
 			linksOnPage.addAll(this.htmlDocument.body().select("ul.no-header").select("a[href]"));
-			for (Element link : linksOnPage) {
-				Category cat = new Category(link.text(), link.absUrl("href"));
-				objects.add(cat);
-			}
 			System.out.println(linksOnPage.size() + " categories found.");
 		}else{
 			linksOnPage = this.htmlDocument.body().select("h2:contains(All categories)").nextAll().select("a[href]");
-			for (Element link : linksOnPage) {
-				Category cat = new Category(link.text(), link.absUrl("href"));
-				objects.add(cat);
-			}
 			System.out.println(linksOnPage.size() + " Subcategories found.");
+		}
+		for (Element link : linksOnPage) {
+			Category cat = new Category(link.text(), link.absUrl("href"));
+			objects.add(cat);
 		}
 
 		return objects;
