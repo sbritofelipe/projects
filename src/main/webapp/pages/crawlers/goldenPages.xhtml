@@ -8,16 +8,17 @@
 		<h:form id="goldenPagesForm">
 			<p:fieldset id="goldenPagesFds">
 				<h3>Filters</h3>
-				<h:panelGroup id="filtersPanel">
+				<h:panelGrid id="filtersPanel" columns="2">
 					<p:outputLabel value="Categories: " for="categories"/>
-					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 200px" converter="#{categoryConverter}">
-						<f:selectItem itemLabel="-- All categories --" itemValue=""/>
+					<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 280px">
+						<f:selectItem itemLabel="-- All categories --" noSelectionOption="true"/>
 						<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
+						<f:converter converterId="categoryConverter"/>
 					</p:selectOneMenu>
-				</h:panelGroup>
+				</h:panelGrid>
 			</p:fieldset>
 			<div style="height: 50px; text-align: right; padding-top: 5px;">
-				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update=":goldenPagesForm:tablePanel" process=":goldenPagesForm:filtersPanel"/>
+				<p:commandButton value="Search" action="#{crawlerController.search(1)}" update=":goldenPagesForm:tablePanel"/>
 			</div>
 			<p:fieldset id="tablePanel" legend="Businesses">
 				<p:dataTable id="businesses" value="#{crawlerController.businesses}"

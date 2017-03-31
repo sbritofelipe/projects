@@ -37,4 +37,12 @@
 <!-- 	</bean> -->
 	<!-- Detect @Transactional Annotation -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- System Messages -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>messages</value>
+		</property>
+	</bean>
 </beans>

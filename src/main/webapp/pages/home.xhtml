@@ -12,11 +12,12 @@
 					<p:outputPanel>
 						<h4>SAMM Web Crawler</h4>
 						<div style="height: 20px"></div>
-						<p:fieldset legend="Search">
-							<p:commandButton value="Golden Pages"
-								action="#{crawlerController.initSearch(1)}"
-								oncomplete="PF('goldenPages').show()" update=":goldenPagesForm:filtersPanel"></p:commandButton>
-						</p:fieldset>
+						<h:panelGrid columns="3">
+							<p:outputLabel value="URL: " for="url"/>
+							<p:inputText id="url" value="#{crawlerController.url}" placeholder="e.g.: www.goldenpages.ie"/>
+							<p:commandButton value="Search" action="#{crawlerController.initSearch}" oncomplete="PF('goldenPages').show()" 
+								update=":goldenPagesForm:filtersPanel"/>
+						</h:panelGrid>
 					</p:outputPanel>
 				</h:form>
 			</div>

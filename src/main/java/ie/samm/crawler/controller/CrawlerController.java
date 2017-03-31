@@ -12,6 +12,7 @@ import javax.faces.bean.ViewScoped;
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.enumetaror.WebsiteEnum;
+import ie.samm.crawler.model.util.Constants;
 import ie.samm.crawler.service.impl.CrawlerService;
 
 @ManagedBean(name = "crawlerController")
@@ -31,12 +32,14 @@ public class CrawlerController extends AbstractController{
 	
 	private Category subcategory;
 	
-	public void initSearch(int page){
+	public void initSearch(){
 		try {
-			if (WebsiteEnum.GOLDEN_PAGES.getId().equals(page)) {
-				url = WebsiteEnum.GOLDEN_PAGES.getAddress();
+			if(!url.contains(Constants.HTTPS)){
+				url = Constants.HTTPS + url; 
+			}
+			if (WebsiteEnum.GOLDEN_PAGES.getAddress().equals(url)) {
 				this.setCategories(new HashSet<Category>());
-				this.getCategories().addAll(crawlerService.searchCategories(url));
+				this.getCategories().addAll(crawlerService.findCategories(url, false));
 			}
 			addSuccessMessage(getCategories().size() + " categories found.");
 		} catch (IOException e) {
@@ -46,11 +49,14 @@ public class CrawlerController extends AbstractController{
 	
 	public void search(int page){
 		try {
-			if (WebsiteEnum.GOLDEN_PAGES.getId().equals(page)) {
-				url = WebsiteEnum.GOLDEN_PAGES.getAddress();
-			}
 			this.businesses = new ArrayList<Business>();
-			this.businesses.addAll(crawlerService.searchBusinessInfo(url));
+			HashSet<Category> categories = new HashSet<Category>();
+			if(category != null){
+				categories.add(category);
+			}else{
+				categories.addAll(categories);
+			}
+			this.businesses.addAll(crawlerService.searchBusinessInfo(categories));
 			addSuccessMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found.");
 		} catch (IOException e) {
 			addErrorMessage("Error.");

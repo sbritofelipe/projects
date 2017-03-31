@@ -6,4 +6,9 @@
 	<application>
 		<el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>
 	</application>
+
+	<converter>
+		<converter-id>categoryConverter</converter-id>
+		<converter-class>ie.samm.crawler.converter.CategoryConverter</converter-class>
+	</converter>
 </faces-config>

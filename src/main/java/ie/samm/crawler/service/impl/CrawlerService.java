@@ -3,55 +3,121 @@ package ie.samm.crawler.service.impl;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.util.Constants;
-import ie.samm.crawler.service.Crawler;
 
 @Component
 public class CrawlerService {
 
+	/** Html Document parsed from the web page. */
+	private Document htmlDocument;
 
-	private Crawler crawler = new Crawler();
+	/** List of links on the page. */
+	private List<String> links = new LinkedList<String>();
+
+	private Elements elements = new Elements();
+
+	private Connection connection;
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public HashSet<Category> findCategories(String url, boolean subcategory) throws IOException{
+		this.htmlDocument = getHtmlDocumentFrom(url); 
+		if(getConnection().response().statusCode() == 200){
+			// 200 is the HTTP OK status code indicating that everything is great.
+			System.out.println("\n**Visiting** Received web page at " + url);
+		}
+
+		Elements linksOnPage = new Elements(); 
+		HashSet objects = new HashSet();
+
+		if(!subcategory){
+			linksOnPage.addAll(this.htmlDocument.body().select("li:contains(Categories)").nextAll().select("a[href]"));
+			linksOnPage.addAll(this.htmlDocument.body().select("ul.no-header").select("a[href]"));
+			for (Element link : linksOnPage) {
+				Category cat = new Category(link.text(), link.absUrl("href"));
+				objects.add(cat);
+			}
+			System.out.println(linksOnPage.size() + " categories found.");
+		}else{
+			linksOnPage = this.htmlDocument.body().select("h2:contains(All categories)").nextAll().select("a[href]");
+			for (Element link : linksOnPage) {
+				Category cat = new Category(link.text(), link.absUrl("href"));
+				objects.add(cat);
+			}
+			System.out.println(linksOnPage.size() + " Subcategories found.");
+		}
+
+		return objects;
+
+	}
+	
+	public void findBusinessMoreInfoElements(String url) throws IOException {
+		this.htmlDocument = getHtmlDocumentFrom(url);
+		elements = new Elements();
+		elements.addAll(this.htmlDocument.select("div.col_left"));
+	}
+
+	public LinkedHashMap<String, String> findCompanies(String url) throws IOException {
+		this.htmlDocument = getHtmlDocumentFrom(url);
+		Elements linksOnPage = this.htmlDocument.body().select("ul.results_list").first().select("div.listing_more").select("a[href]").select("a.wt");
+		LinkedHashMap<String, String> companies = new LinkedHashMap<>();
+		for (Element link : linksOnPage) {
+			companies.put(link.absUrl("href"), link.text());
+		}
+		System.out.println(linksOnPage.size() + " businesses found.");
+		return companies;
+	}
+
+	private Document getHtmlDocumentFrom(String url) throws IOException {
+		if (getConnection() == null) {
+			setConnection(Jsoup.connect(url).userAgent(Constants.USER_AGENT));
+		} else {
+			setConnection(getConnection().url(url));
+		}
+		return getConnection().get();
+	}
+
 	
 	/**
-	 * Main launching point for the CrawlerController's functionality. Internally it
-	 * creates crawler that make an HTTP request and parse the response (the
-	 * web page).
 	 * 
-	 * @param url
-	 *            - The starting point of the controller
 	 * @throws IOException 
 	 */
-	public HashSet<Business> searchBusinessInfo(String url) throws IOException {
-		LinkedHashMap<String, String> categories = (LinkedHashMap<String, String>) crawler.crawl(url, 0);
+	public HashSet<Business> searchBusinessInfo(HashSet<Category> categories) throws IOException {
 		HashSet<Business> businesses = new HashSet<Business>();
-		for (Map.Entry<String, String> category : categories.entrySet()) {
-			String businessCategory = category.getValue();
-			LinkedHashMap<String, String> subCategories = (LinkedHashMap<String, String>) crawler.crawl(category.getKey(), 1);
-			for (Map.Entry<String, String> subCategory : subCategories.entrySet()) {
-				LinkedHashMap<String, String> companies = (LinkedHashMap<String, String>) crawler.crawl(subCategory.getKey(), 2);
-				for (Map.Entry<String, String> company : companies.entrySet()) {
-					crawler.crawl(company.getKey(), 3);
-					Element element = crawler.getElements().get(0);
+		for (Category category : categories) {
+			String businessCategory = category.getName();
+			HashSet<Category> subCategories = category.getSubcategories() != null ? category.getSubcategories() : findCategories(category.getUrl(), true);
+			for (Category subCategory : subCategories) {
+				LinkedHashMap<String, String> companies = findCompanies(subCategory.getUrl());
+				for (Entry<String, String> company : companies.entrySet()) {
+					findBusinessMoreInfoElements(company.getKey());
+					Element element = getElements().get(0);
 					String companyName = element.select("h1.name").text();
-					String phone = crawler.searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first());
+					String phone = searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first());
 					String address = element.select("li.contact-address").text();
 					String mobile = element.select("#mobileinfo").first() != null? 
-									crawler.searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
+									searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
 					String email = element.select("#emailinfo").first() != null?
-									crawler.searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
+									searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
 					Business business = new Business(businessCategory, companyName, phone, address, mobile, email);
 					
 					System.out.println(business.toString());
 					businesses.add(business);
-//					break;
 				}
 				break;
 			}
@@ -60,39 +126,65 @@ public class CrawlerService {
 		return businesses;
 	}
 	
-	public HashSet<Category> searchCategories(String url) throws IOException {
-		Crawler crawler = new Crawler();
-		HashSet<Category> categories = new HashSet<Category>();
-		LinkedHashMap<String, String> dataCategories = (LinkedHashMap<String, String>) crawler.crawl(url, 0);
-		for (Entry<String, String> dataCat : dataCategories.entrySet()) {
-			Category category = new Category(dataCat.getValue(), dataCat.getKey());
-			categories.add(category);
+	public Set<String> searchForPattern(String pattern) {
+		// This method should only be used after a successful crawl.
+		if (this.htmlDocument == null) {
+			System.out.println("ERROR! Call crawl() before performing analysis on the document");
 		}
-		return categories;
-	}
-	
-	public HashSet<Category> searchSubcategories(Category category) throws IOException{
-		HashSet<Category> subCategories = new HashSet<Category>();
-		LinkedHashMap<String, String> hashMap = (LinkedHashMap<String, String>) crawler.crawl(category.getUrl(), 1);
-		for (Entry<String,String> subcat : hashMap.entrySet()) {
-			subCategories.add(new Category(subcat.getValue(), subcat.getKey()));
+		System.out.println("Searching for the Pattern...");
+		String bodyText = this.htmlDocument.body().text();
+		Matcher m = Pattern.compile(pattern).matcher(bodyText.toLowerCase());
+		Set<String> words = new HashSet<String>();
+		while (m.find()) {
+			words.add(m.group());
 		}
-		
-		return subCategories;
+		return words;
 	}
 
-	/**
-	 * @return the crawler
-	 */
-	public Crawler getCrawler() {
-		return crawler;
+	public String searchForPatternInElement(String pattern, Element element) {
+		// This method should only be used after a successful crawl.
+		if (element == null) {
+			System.out.println("ERROR! Call crawl() before performing analysis on the document");
+		}
+		// System.out.println("Searching for the Pattern...");
+		String bodyText = element.text();
+		Matcher m = Pattern.compile(pattern).matcher(bodyText.toLowerCase());
+		if (m.find()) {
+			return m.group();
+		}
+		return null;
 	}
 
-	/**
-	 * @param crawler the crawler to set
-	 */
-	public void setCrawler(Crawler crawler) {
-		this.crawler = crawler;
+	// GETTERS AND SETTERS
+	public Document getHtmlDocument() {
+		return htmlDocument;
 	}
 
+	public void setHtmlDocument(Document htmlDocument) {
+		this.htmlDocument = htmlDocument;
+	}
+
+	public List<String> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<String> links) {
+		this.links = links;
+	}
+
+	public Elements getElements() {
+		return elements;
+	}
+
+	public void setElements(Elements elements) {
+		this.elements = elements;
+	}
+
+	public Connection getConnection() {
+		return connection;
+	}
+
+	public void setConnection(Connection connection) {
+		this.connection = connection;
+	}
 }
