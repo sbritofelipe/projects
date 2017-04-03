@@ -8,7 +8,7 @@
 	<!-- Enable Spring Annotation Configuration -->
 	<context:annotation-config />
 	<!-- Scan for all of Spring components such as Spring Service -->
-	<context:component-scan base-package="ie.samm.crawler.service"></context:component-scan>
+	<context:component-scan base-package="ie.samm.crawler"></context:component-scan>
 	<!-- Create Data Source bean -->
 <!-- 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" -->
 <!-- 		destroy-method="close"> -->

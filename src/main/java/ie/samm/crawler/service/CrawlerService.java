@@ -2,17 +2,14 @@ package ie.samm.crawler.service;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import ie.samm.crawler.model.Business;
+import ie.samm.crawler.model.Category;
 
 public interface CrawlerService {
 	
-	HashSet<Business> searchBusinessInfo(String url) throws IOException;
+	HashSet<Business> searchBusinessInfo(HashSet<Category> category) throws IOException;
 
-	Map<? extends String, ? extends String> searchCategories(String url) throws IOException;
-
-	Map<? extends String, ? extends String> searchSubcategories(LinkedHashMap<String, String> categories) throws IOException;
+	HashSet<Category> findCategories(String url, boolean b) throws IOException;
 
 }

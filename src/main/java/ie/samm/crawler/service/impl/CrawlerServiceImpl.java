@@ -15,14 +15,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.util.Constants;
+import ie.samm.crawler.service.CrawlerService;
 
-@Component
-public class CrawlerService {
+@Service("crawlerServiceImpl")
+public class CrawlerServiceImpl implements CrawlerService{
 
 	/** Html Document parsed from the web page. */
 	private Document htmlDocument;
@@ -33,6 +34,10 @@ public class CrawlerService {
 	private Elements elements = new Elements();
 
 	private Connection connection;
+	
+	public CrawlerServiceImpl() {
+		
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public HashSet<Category> findCategories(String url, boolean subcategory) throws IOException{
@@ -62,10 +67,15 @@ public class CrawlerService {
 
 	}
 	
-	public void findBusinessMoreInfoElements(String url) throws IOException {
+	public boolean findBusinessMoreInfoElements(String url) throws IOException {
 		this.htmlDocument = getHtmlDocumentFrom(url);
-		elements = new Elements();
-		elements.addAll(this.htmlDocument.select("div.col_left"));
+		if(this.htmlDocument != null){
+			elements = new Elements();
+			elements.addAll(this.htmlDocument.select("div.col_left"));
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	public LinkedHashMap<String, String> findCompanies(String url) throws IOException {
@@ -80,10 +90,16 @@ public class CrawlerService {
 	}
 
 	private Document getHtmlDocumentFrom(String url) throws IOException {
-		if (getConnection() == null) {
-			setConnection(Jsoup.connect(url).userAgent(Constants.USER_AGENT));
-		} else {
-			setConnection(getConnection().url(url));
+		setConnection(Jsoup.connect(url).userAgent(Constants.USER_AGENT));
+		if(getConnection().response().statusCode() == 200){ 
+			// 200 is the HTTP OK status code
+			System.out.println("\n**Visiting** Received web page at " + url);
+		}
+		if(getConnection().response().statusCode() == 404){
+			return null;
+		}
+		if(!getConnection().response().contentType().contains("text/html")){
+			System.out.println("**Failure** Retrieved something other than HTML");
 		}
 		return getConnection().get();
 	}
@@ -101,25 +117,31 @@ public class CrawlerService {
 			for (Category subCategory : subCategories) {
 				LinkedHashMap<String, String> companies = findCompanies(subCategory.getUrl());
 				for (Entry<String, String> company : companies.entrySet()) {
-					findBusinessMoreInfoElements(company.getKey());
-					Element element = getElements().get(0);
-					String companyName = element.select("h1.name").text();
-					String phone = searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first());
-					String address = element.select("li.contact-address").text();
-					String mobile = element.select("#mobileinfo").first() != null? 
-									searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
-					String email = element.select("#emailinfo").first() != null?
-									searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
-					Business business = new Business(businessCategory, companyName, phone, address, mobile, email);
-					
-					System.out.println(business.toString());
-					businesses.add(business);
+					if(findBusinessMoreInfoElements(company.getKey())){
+						Business business = populateBusiness(businessCategory);
+						businesses.add(business);
+					}
 				}
 				break;
 			}
 			break;
 		}
 		return businesses;
+	}
+
+	private Business populateBusiness(String businessCategory) {
+		Element element = getElements().get(0);
+		String companyName = element.select("h1.name").text();
+		String phone = searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first());
+		String address = element.select("li.contact-address").text();
+		String mobile = element.select("#mobileinfo").first() != null? 
+						searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
+		String email = element.select("#emailinfo").first() != null?
+						searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
+		Business business = new Business(businessCategory, companyName, phone, address, mobile, email);
+		
+		System.out.println(business.toString());
+		return business;
 	}
 	
 	public Set<String> searchForPattern(String pattern) {
@@ -183,4 +205,5 @@ public class CrawlerService {
 	public void setConnection(Connection connection) {
 		this.connection = connection;
 	}
+
 }

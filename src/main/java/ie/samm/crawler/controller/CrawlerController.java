@@ -5,21 +5,22 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.enumetaror.WebsiteEnum;
 import ie.samm.crawler.model.util.Constants;
-import ie.samm.crawler.service.impl.CrawlerService;
+import ie.samm.crawler.service.CrawlerService;
 
-@ManagedBean(name = "crawlerController")
+@Controller
 @ViewScoped
 public class CrawlerController extends AbstractController{
 
-	@ManagedProperty("#{crawlerService}")
+	@Autowired
 	private CrawlerService crawlerService;
 	
 	private String url;
@@ -36,6 +37,7 @@ public class CrawlerController extends AbstractController{
 	
 	public void initSearch(){
 		try {
+			initLists();
 			if(!url.contains(Constants.HTTPS)){
 				url = Constants.HTTPS + url; 
 			}
@@ -47,6 +49,12 @@ public class CrawlerController extends AbstractController{
 		} catch (IOException e) {
 			addErrorMessage("Error.");
 		}
+	}
+
+	private void initLists() {
+		this.businesses = new ArrayList<Business>();
+		this.categories = new HashSet<Category>();
+		this.subcategories = new HashSet<Category>();
 	}
 	
 	public void initSubcategories(){
@@ -127,20 +135,6 @@ public class CrawlerController extends AbstractController{
 	 */
 	public void setSubcategories(HashSet<Category> subcategories) {
 		this.subcategories = subcategories;
-	}
-
-	/**
-	 * @return the crawlerservice
-	 */
-	public CrawlerService getCrawlerService() {
-		return crawlerService;
-	}
-
-	/**
-	 * @param crawlerService
-	 */
-	public void setCrawlerService(CrawlerService crawlerService) {
-		this.crawlerService = crawlerService;
 	}
 
 	/**
