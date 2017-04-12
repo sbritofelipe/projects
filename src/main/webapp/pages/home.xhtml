@@ -13,14 +13,12 @@
 						<div style="height: 20px"></div>
 						<h:panelGrid columns="3">
 							<p:outputLabel value="URL: " for="url"/>
-							<p:inputText id="url" value="#{crawlerController.url}" placeholder="e.g.: www.goldenpages.ie"/>
-							<p:commandButton value="Search" action="#{crawlerController.initSearch}" oncomplete="PF('goldenPages').show()" 
-								update=":goldenPagesForm:filtersPanel"/>
+							<p:inputText id="url" value="#{crawlerController.url}" placeholder="e.g.: https://www.goldenpages.ie" size="30"/>
+							<p:commandButton value="Search" action="#{crawlerController.search}" />
 						</h:panelGrid>
 					</p:outputPanel>
 				</h:form>
 			</div>
 		</p:fieldset>
-		<ui:include src="/pages/crawlers/goldenPages.xhtml" />
 	</ui:define>
 </ui:composition>

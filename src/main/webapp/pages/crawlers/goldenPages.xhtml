@@ -2,87 +2,96 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:p="http://primefaces.org/ui">
+	xmlns:p="http://primefaces.org/ui"
+	template="../mainTemplate.xhtml">
 
-	<p:dialog widgetVar="goldenPages" closable="true" id="dlgGoldenPages" modal="true" height="500" width="900" header="Golden Pages">
-		<h:form id="goldenPagesForm">
-			<p:fieldset id="goldenPagesFds">
-				<h3>Filters</h3>
-				<h:panelGrid id="filtersPanel" columns="2">
-					<h:panelGrid id="gridCategoryPanel" columns="2">
-						<p:outputLabel value="Categories: " for="categories"/>
-						<p:selectOneMenu id="categories" value="#{crawlerController.category}" style="width: 280px">
-							<f:selectItem itemLabel="-- All categories --" noSelectionOption="true"/>
-							<f:selectItems value="#{crawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
-							<f:converter converterId="categoryConverter"/>
-							<p:ajax event="change" listener="#{crawlerController.initSubcategories}" update=":goldenPagesForm:gridSubcategoryPanel"/>
-						</p:selectOneMenu>
-					</h:panelGrid>
-					
-					<h:panelGrid id="gridSubcategoryPanel" columns="2">
-						<p:outputLabel value="Subcategories: " for="subcategories"/>
-						<p:selectOneMenu id="subcategories" value="#{crawlerController.subcategory}" style="width: 280px">
-							<f:selectItem itemLabel="-- All subcategories --" noSelectionOption="true"/>
-							<f:selectItems value="#{crawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
-							<f:converter converterId="categoryConverter"/>
-						</p:selectOneMenu>
-					</h:panelGrid>
-				</h:panelGrid>
-			</p:fieldset>
-			<div style="height: 50px; text-align: right; padding-top: 5px;">
-				<p:commandButton value="Search" action="#{crawlerController.search}" update=":goldenPagesForm:tablePanel"/>
+	<ui:define name="content">
+		<p:panel id="goldenPages" header="Golden Pages">
+			<div style="width: 80%; padding-left: 10%">
+				<h:form id="goldenPagesForm">
+					<p:fieldset id="goldenPagesFds">
+						<h3>Filters</h3>
+						<h:panelGrid id="filtersPanel" columns="2">
+							<h:panelGrid id="gridCategoryPanel" columns="2">
+								<p:outputLabel value="Categories: " for="categories"/>
+								<p:selectOneMenu id="categories" value="#{goldenPagesCrawlerController.category}" style="width: 280px" required="true">
+									<f:selectItem itemLabel="-- Select one category --" noSelectionOption="true"/>
+									<f:selectItems value="#{goldenPagesCrawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
+									<f:converter converterId="categoryConverter"/>
+									<p:ajax event="change" listener="#{goldenPagesCrawlerController.initSubcategories}" update=":goldenPagesForm:gridSubcategoryPanel" process="@this"/>
+								</p:selectOneMenu>
+							</h:panelGrid>
+							
+							<h:panelGrid id="gridSubcategoryPanel" columns="2">
+								<p:outputLabel value="Subcategories: " for="subcategories"/>
+								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px">
+									<f:selectItem itemLabel="-- Select one subcategory --" noSelectionOption="true"/>
+									<f:selectItems value="#{goldenPagesCrawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
+									<f:converter converterId="categoryConverter"/>
+								</p:selectOneMenu>
+							</h:panelGrid>
+						</h:panelGrid>
+					</p:fieldset>
+					<div style="height: 50px; text-align: right; padding-top: 5px;">
+						<p:commandButton value="Search" action="#{goldenPagesCrawlerController.search}" update=":goldenPagesForm"/>
+					</div>
+
+					<p:fieldset id="tablePanel">
+						<h3>Businesses</h3>
+						<p:dataTable id="businesses" value="#{goldenPagesCrawlerController.dataModel}" widgetVar="businessesTable"
+							var="business" emptyMessage="No businesses found." paginator="true" lazy="true" 
+							rows="10" paginatorPosition="bottom" rowsPerPageTemplate="5,10,15" first="0"
+							paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}">
+							
+<!-- 							<p:ajax event="page" update=":goldenPagesForm" listener="#{goldenPagesCrawlerController.updateTable}"/> -->
+
+							<f:facet name="{Exporters}">
+								<h:commandLink >
+									<p:graphicImage url="/images/csv.png" width="24" />
+									<p:dataExporter type="csv" target="businesses"
+										fileName="businesses" />
+								</h:commandLink>
+							</f:facet>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Category" />
+								</f:facet>
+								<h:outputText value="#{business.category.name}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Company" />
+								</f:facet>
+								<h:outputText value="#{business.company}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Phone" />
+								</f:facet>
+								<h:outputText value="#{business.phone}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Address" />
+								</f:facet>
+								<h:outputText value="#{business.address}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Mobile" />
+								</f:facet>
+								<h:outputText value="#{business.mobile}" />
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Email" />
+								</f:facet>
+								<h:outputText value="#{business.email}" />
+							</p:column>
+						</p:dataTable>
+					</p:fieldset>
+				</h:form>
 			</div>
-			<p:fieldset id="tablePanel" legend="Businesses">
-				<p:dataTable id="businesses" value="#{crawlerController.businesses}"
-					var="business" emptyMessage="No businesses found." paginator="true"
-					rows="10" paginatorPosition="bottom" rowsPerPageTemplate="5,10,15"
-					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}">
-
-					<f:facet name="{Exporters}">
-						<h:commandLink>
-							<p:graphicImage url="/images/csv.png" width="24" />
-							<p:dataExporter type="csv" target="businesses"
-								fileName="businesses" />
-						</h:commandLink>
-					</f:facet>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Category" />
-						</f:facet>
-						<h:outputText value="#{business.category}" />
-					</p:column>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Company" />
-						</f:facet>
-						<h:outputText value="#{business.company}" />
-					</p:column>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Phone" />
-						</f:facet>
-						<h:outputText value="#{business.phone}" />
-					</p:column>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Address" />
-						</f:facet>
-						<h:outputText value="#{business.address}" />
-					</p:column>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Mobile" />
-						</f:facet>
-						<h:outputText value="#{business.mobile}" />
-					</p:column>
-					<p:column>
-						<f:facet name="header">
-							<h:outputText value="Email" />
-						</f:facet>
-						<h:outputText value="#{business.email}" />
-					</p:column>
-				</p:dataTable>
-			</p:fieldset>
-		</h:form>
-	</p:dialog>
+		</p:panel>
+	</ui:define>
 </ui:composition>

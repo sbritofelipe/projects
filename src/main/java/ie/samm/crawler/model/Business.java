@@ -16,7 +16,7 @@ public class Business extends Entity{
 	
 	private Long id;
 	
-	private String category;
+	private Category category;
 
 	private String company;
 	
@@ -32,7 +32,7 @@ public class Business extends Entity{
 		
 	}
 	
-	public Business(String category, String company, String phone, String address, String mobile, String email) {
+	public Business(Category category, String company, String phone, String address, String mobile, String email) {
 		this.category = category;
 		this.company = company;
 		this.phone = phone;
@@ -125,11 +125,11 @@ public class Business extends Entity{
 		this.email = email;
 	}
 
-	public String getCategory() {
+	public Category getCategory() {
 		return category;
 	}
 
-	public void setCategory(String category) {
+	public void setCategory(Category category) {
 		this.category = category;
 	}
 

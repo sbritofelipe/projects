@@ -1,12 +1,12 @@
-package ie.samm.crawler.service.impl;
+package ie.samm.crawler.crawlers;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,16 +15,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.stereotype.Service;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.util.Constants;
-import ie.samm.crawler.service.CrawlerService;
 
-@Service("crawlerServiceImpl")
-public class CrawlerServiceImpl implements CrawlerService{
-
+public class GoldenPagesCrawler {
+	
 	/** Html Document parsed from the web page. */
 	private Document htmlDocument;
 
@@ -35,7 +32,7 @@ public class CrawlerServiceImpl implements CrawlerService{
 
 	private Connection connection;
 	
-	public CrawlerServiceImpl() {
+	public GoldenPagesCrawler() {
 		
 	}
 
@@ -98,9 +95,6 @@ public class CrawlerServiceImpl implements CrawlerService{
 		if(getConnection().response().statusCode() == 404){
 			return null;
 		}
-		if(!getConnection().response().contentType().contains("text/html")){
-			System.out.println("**Failure** Retrieved something other than HTML");
-		}
 		return getConnection().get();
 	}
 
@@ -112,13 +106,12 @@ public class CrawlerServiceImpl implements CrawlerService{
 	public HashSet<Business> searchBusinessInfo(HashSet<Category> categories) throws IOException {
 		HashSet<Business> businesses = new HashSet<Business>();
 		for (Category category : categories) {
-			String businessCategory = category.getName();
 			HashSet<Category> subCategories = category.getSubcategories() != null ? category.getSubcategories() : findCategories(category.getUrl(), true);
 			for (Category subCategory : subCategories) {
 				LinkedHashMap<String, String> companies = findCompanies(subCategory.getUrl());
 				for (Entry<String, String> company : companies.entrySet()) {
 					if(findBusinessMoreInfoElements(company.getKey())){
-						Business business = populateBusiness(businessCategory);
+						Business business = populateBusiness(subCategory);
 						businesses.add(business);
 					}
 				}
@@ -129,7 +122,7 @@ public class CrawlerServiceImpl implements CrawlerService{
 		return businesses;
 	}
 
-	private Business populateBusiness(String businessCategory) {
+	private Business populateBusiness(Category subCategory) {
 		Element element = getElements().get(0);
 		String companyName = element.select("h1.name").text();
 		String phone = searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first());
@@ -138,7 +131,7 @@ public class CrawlerServiceImpl implements CrawlerService{
 						searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
 		String email = element.select("#emailinfo").first() != null?
 						searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
-		Business business = new Business(businessCategory, companyName, phone, address, mobile, email);
+		Business business = new Business(subCategory, companyName, phone, address, mobile, email);
 		
 		System.out.println(business.toString());
 		return business;
