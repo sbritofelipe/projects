@@ -6,6 +6,16 @@
 	template="../mainTemplate.xhtml">
 
 	<ui:define name="content">
+		<script type="text/javascript">  
+		    function start() {  
+		        statusDialog.show();  
+		    }  
+		
+		    function stop() {  
+		        statusDialog.hide();  
+		    }  
+		</script>
+		
 		<p:panel id="goldenPages" header="Golden Pages">
 			<div style="width: 80%; padding-left: 10%">
 				<h:form id="goldenPagesForm">
@@ -24,7 +34,7 @@
 							
 							<h:panelGrid id="gridSubcategoryPanel" columns="2">
 								<p:outputLabel value="Subcategories: " for="subcategories"/>
-								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px">
+								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px" required="true">
 									<f:selectItem itemLabel="-- Select one subcategory --" noSelectionOption="true"/>
 									<f:selectItems value="#{goldenPagesCrawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
 									<f:converter converterId="categoryConverter"/>
@@ -46,11 +56,11 @@
 <!-- 							<p:ajax event="page" update=":goldenPagesForm" listener="#{goldenPagesCrawlerController.updateTable}"/> -->
 
 							<f:facet name="{Exporters}">
-								<h:commandLink >
+								<p:commandLink onclick="Primefaces.monitorDownload(start, stop);" ajax="false">
 									<p:graphicImage url="/images/csv.png" width="24" />
 									<p:dataExporter type="csv" target="businesses"
 										fileName="businesses" />
-								</h:commandLink>
+								</p:commandLink>
 							</f:facet>
 							<p:column>
 								<f:facet name="header">
@@ -90,6 +100,9 @@
 							</p:column>
 						</p:dataTable>
 					</p:fieldset>
+					<div style="height: 50px; text-align: left; padding-top: 5px;">
+						<p:commandButton value="Back" action="#{crawlerController.home}" immediate="true"/>
+					</div>
 				</h:form>
 			</div>
 		</p:panel>

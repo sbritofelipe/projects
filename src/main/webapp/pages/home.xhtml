@@ -13,7 +13,7 @@
 						<div style="height: 20px"></div>
 						<h:panelGrid columns="3">
 							<p:outputLabel value="URL: " for="url"/>
-							<p:inputText id="url" value="#{crawlerController.url}" placeholder="e.g.: https://www.goldenpages.ie" size="30"/>
+							<p:inputText id="url" value="#{crawlerController.url}" placeholder="e.g.: https://www.goldenpages.ie" size="30" required="true"/>
 							<p:commandButton value="Search" action="#{crawlerController.search}" />
 						</h:panelGrid>
 					</p:outputPanel>

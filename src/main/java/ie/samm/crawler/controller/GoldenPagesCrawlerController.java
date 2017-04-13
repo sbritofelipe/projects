@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,9 +12,9 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.context.FacesContext;
 
-import org.primefaces.context.RequestContext;
-import org.primefaces.event.data.PageEvent;
+import org.primefaces.component.datatable.DataTable;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 
@@ -24,12 +25,10 @@ import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.enumetaror.WebsiteEnum;
 import ie.samm.crawler.service.GoldenPagesCrawlerService;
 
-//@Controller
 @ManagedBean(name="goldenPagesCrawlerController")
 @ViewScoped
 public class GoldenPagesCrawlerController extends AbstractController{
 
-//	@Autowired
 	@ManagedProperty("#{crawlerServiceImpl}")
 	private GoldenPagesCrawlerService crawlerService;
 	
@@ -47,38 +46,16 @@ public class GoldenPagesCrawlerController extends AbstractController{
 	
 	private BusinessFilter businessFilter;
 	
+	private LinkedHashMap<String, String> linksCompanies;
+	
 	@PostConstruct
 	public void init(){
 		try {
 			initVariables();
 			getCategories().addAll(getCrawlerService().findCategories(WebsiteEnum.GOLDEN_PAGES.getAddress(), false));
 			addSuccessMessage(getCategories().size() + " categories found.");
-			this.dataModel = new LazyDataModel<Business>() {
-				private static final long serialVersionUID = 1L;
-				
-				@Override
-			    public List<Business> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String,Object> filters) {
-					
-					try {
-						businessFilter.setFirstResult(first);
-						businessFilter.setPageSize(pageSize);
-						businessFilter.setSortField(sortField);
-						businessFilter.setSortOrder(sortOrder);
-						setBusinesses(new ArrayList<>());
-						getBusinesses().addAll(crawlerService.searchBusinessInfo(businessFilter, getCategory()));
-						setRowCount(businessFilter.getRowCount());
-					} catch (IOException e) {
-						addErrorMessage("Error retrieving businesses from Golden Pages.");
-					}
-			    	//sort
-			        if(sortField != null) {
-			            Collections.sort(getBusinesses(), new LazySorter(sortField, sortOrder));
-			        }
-			        return getBusinesses();
-			    }
-				
-			};
-		} catch (IOException e) {
+			
+		} catch (Exception e) {
 			e.printStackTrace();
 			addErrorMessage("Error while scraping " + WebsiteEnum.GOLDEN_PAGES.getAddress());
 		}
@@ -93,7 +70,7 @@ public class GoldenPagesCrawlerController extends AbstractController{
 		this.businessFilter = new BusinessFilter();
 	}
 	
-	public void initSubcategories(){
+	public void initSubcategories() throws Exception{
 		try {
 			this.subcategories = new HashSet<Category>();
 			this.subcategories = getCategory() != null? getCrawlerService().findCategories(getCategory().getUrl(), true) : null;
@@ -104,26 +81,46 @@ public class GoldenPagesCrawlerController extends AbstractController{
 	}
 	
 	public void search(){
-//		try {
-//			HashSet<Category> categories = new HashSet<Category>();
-//			if(this.category != null){
-				if(this.subcategory != null){
-					this.category.setSubcategories(new HashSet<Category>());
-					this.category.getSubcategories().add(this.subcategory);
-				}
-//				categories.add(this.category);
-//			}
-			
-//			addSuccessMessage(businesses.isEmpty()? "No businesses found." : this.businesses.size() + " businesses found.");
-//		} catch (IOException e) {
-//			addErrorMessage("Error.");
-//		}
+		try {
+			linksCompanies = crawlerService.findLinkCompanies(getSubcategory());
+			businessFilter.setRowCount(linksCompanies.size());
+			DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("goldenPagesForm:businesses");
+			dataTable.reset();
+			loadDataModel();	
+		} catch (Exception e) {
+			addErrorMessage("Error finding companies." + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
-	public void updateTable(PageEvent event){
-//		loadDataModel(this.subcategories);
-		RequestContext.getCurrentInstance().update(event.getComponent().getId());
+	private void loadDataModel(){
+		this.dataModel = new LazyDataModel<Business>() {
+			private static final long serialVersionUID = 1L;
+			
+			@Override
+		    public List<Business> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String,Object> filters) {
+				
+				try {
+					businessFilter.setFirstResult(first);
+					businessFilter.setPageSize(pageSize);
+					businessFilter.setSortField(sortField);
+					businessFilter.setSortOrder(sortOrder);
+					businesses = new ArrayList<>();
+					businesses.addAll(crawlerService.searchBusinessInfo(businessFilter, subcategory, linksCompanies));	
+					setRowCount(businessFilter.getRowCount());
+					if(sortField != null) {
+						Collections.sort(getBusinesses(), new LazySorter(sortField, sortOrder));
+					}
+				} catch (Exception e) {
+					addErrorMessage("Error retrieving businesses from Golden Pages.");
+				}
+		    	//sort
+		        return businesses;
+		    }
+			
+		};
 	}
+	
 
 	/**
 	 * @return the crawlerService
@@ -237,6 +234,20 @@ public class GoldenPagesCrawlerController extends AbstractController{
 	 */
 	public void setBusinessFilter(BusinessFilter businessFilter) {
 		this.businessFilter = businessFilter;
+	}
+
+	/**
+	 * @return the linksCompanies
+	 */
+	public LinkedHashMap<String, String> getLinksCompanies() {
+		return linksCompanies;
+	}
+
+	/**
+	 * @param linksCompanies the linksCompanies to set
+	 */
+	public void setLinksCompanies(LinkedHashMap<String, String> linksCompanies) {
+		this.linksCompanies = linksCompanies;
 	}
 	
 }

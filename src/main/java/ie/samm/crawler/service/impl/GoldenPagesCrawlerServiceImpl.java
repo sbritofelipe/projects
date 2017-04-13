@@ -1,12 +1,13 @@
 package ie.samm.crawler.service.impl;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -19,8 +20,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 
 import ie.samm.crawler.model.Business;
@@ -31,10 +33,10 @@ import ie.samm.crawler.model.util.Constants;
 import ie.samm.crawler.service.GoldenPagesCrawlerService;
 
 @Service("crawlerServiceImpl")
-public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService{
+public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService {
 
-	private static final int NUMBER_OF_RESULTS_PER_PAGE = 19;
-	
+	private static final int NUMBER_OF_RESULTS_PER_PAGE = 20;
+
 	private static final Logger LOGGER = Logger.getLogger(GoldenPagesCrawlerServiceImpl.class.getName());
 
 	/** Html Document parsed from the web page. */
@@ -46,27 +48,27 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService{
 	private Elements elements = new Elements();
 
 	private Connection connection;
-	
+
 	public GoldenPagesCrawlerServiceImpl() {
-		
+
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public HashSet<Category> findCategories(String url, boolean subcategory) throws IOException{
-		this.htmlDocument =  getHtmlDocumentFrom(url);//Jsoup.parse(html); 
-//		if(getConnection().response().statusCode() == 200){
-			// 200 is the HTTP OK status code indicating that everything is great.
+	public HashSet<Category> findCategories(String url, boolean subcategory) throws Exception {
+		this.htmlDocument = getHtmlDocumentFrom(url);// Jsoup.parse(html);
+		// if(getConnection().response().statusCode() == 200){
+		// 200 is the HTTP OK status code indicating that everything is great.
 		System.out.println("\n**Visiting** Received web page at " + url);
-//		}
+		// }
 
-		Elements linksOnPage = new Elements(); 
+		Elements linksOnPage = new Elements();
 		HashSet objects = new HashSet();
 
-		if(!subcategory){
+		if (!subcategory) {
 			linksOnPage.addAll(this.htmlDocument.body().select("li:contains(Categories)").nextAll().select("a[href]"));
 			linksOnPage.addAll(this.htmlDocument.body().select("ul.no-header").select("a[href]"));
 			System.out.println(linksOnPage.size() + " categories found.");
-		}else{
+		} else {
 			linksOnPage = this.htmlDocument.body().select("h2:contains(All categories)").nextAll().select("a[href]");
 			System.out.println(linksOnPage.size() + " Subcategories found.");
 		}
@@ -78,106 +80,85 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService{
 		return objects;
 
 	}
-	
+
 	public boolean findBusinessMoreInfoElements(String url) throws IOException {
 		this.htmlDocument = getHtmlDocumentFrom(url);
-		if(this.htmlDocument != null){
+		if (this.htmlDocument != null) {
 			elements = new Elements();
 			elements.addAll(this.htmlDocument.select("div.col_left"));
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-//	@SuppressWarnings("resource")
-	public LinkedHashMap<String, String> findCompanies(BusinessFilter filter, String url) throws IOException {
-		if(filter.getFirstResult() > NUMBER_OF_RESULTS_PER_PAGE){
-			System.setProperty("webdriver.chrome.driver", "/users/public/chromedriver.exe");
-			WebDriver webDriver = new ChromeDriver();
-			webDriver.get(url);
-			try {
-				Thread.sleep(8000);
-				for (int i = 1; i < filter.getFirstResult()/filter.getPageSize(); i++) {
-					webDriver.findElement(By.id("result-next")).click();
-					Thread.sleep(5000);
-				}
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-//			WebClient webClient = new WebClient(BrowserVersion.CHROME);
-//			webClient.getCookieManager().setCookiesEnabled(true);
-//	        webClient.getOptions().setJavaScriptEnabled(true);
-//	        webClient.getOptions().setTimeout(2000);
-//	        webClient.getOptions().setUseInsecureSSL(true);
-//	        // overcome problems in JavaScript
-//	        webClient.getOptions().setThrowExceptionOnScriptError(false);
-//	        webClient.getOptions().setPrintContentOnFailingStatusCode(false);
-//	        webClient.setCssErrorHandler(new SilentCssErrorHandler());
-//            HtmlPage page = webClient.getPage(url);
-//			page = page.getElementById("result-next").click();
-//			while(page.getByXPath("//li[@class='result-item22']") == null) {
-			    // Wait for javascript to catch up.
-//			    webClient. waitForBackgroundJavaScript(1000);
+//	public LinkedHashMap<String, String> findCompanies(BusinessFilter filter, String url) throws IOException {
+//		if (filter.getFirstResult() > NUMBER_OF_RESULTS_PER_PAGE) {
+//			HtmlUnitDriver webDriver = new HtmlUnitDriver();
+//			webDriver.setJavascriptEnabled(true);
+//			webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+//			webDriver.get(url);
+//			WebDriverWait wait = new WebDriverWait(webDriver, 30);
+//			for (int i = 1; i < filter.getFirstResult() / filter.getPageSize(); i++) {
+//				((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);",
+//						webDriver.findElement(By.id("result-next")));
+//				wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));
+//				webDriver.findElement(By.id("result-next")).click();
+//				wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));
 //			}
-//			WebResponse response = page.getWebResponse();
-			String html = webDriver.getPageSource(); //response.getContentAsString();
-			this.htmlDocument = Jsoup.parse(html);
-			webDriver.close();
-		}else{
-			this.htmlDocument = getHtmlDocumentFrom(url);
-		}
-		if(this.htmlDocument != null){
-			String resultspan = this.htmlDocument.body().select("div#results_header > span").text();
-			filter.setRowCount(Integer.parseInt(resultspan.replaceAll("[^0-9]", "")));
-			Elements linksOnPage = this.htmlDocument.body().select("li[class^=result-item]").select("div.listing_more").select("a[href]").select("a.wt");
-			LinkedHashMap<String, String> companies = new LinkedHashMap<>();
-			int size = filter.getFirstResult() + filter.getPageSize() > linksOnPage.size()? linksOnPage.size() : filter.getFirstResult() + filter.getPageSize();
-			for (int i = filter.getFirstResult(); i < size; i++) {
-				Element link = linksOnPage.get(i);
-				companies.put(WebsiteEnum.GOLDEN_PAGES.getAddress() + link.attr("href"), link.text());
-			}
-			return companies;
-		}
-		return new LinkedHashMap<String, String>();
-	}
+//			String html = webDriver.getPageSource();
+//			this.htmlDocument = Jsoup.parse(html);
+//			webDriver.close();
+//		} else {
+//			this.htmlDocument = getHtmlDocumentFrom(url);
+//		}
+//		if (this.htmlDocument != null) {
+//			String resultspan = this.htmlDocument.body().select("div#results_header > span").text();
+//			filter.setRowCount(Integer.parseInt(resultspan.replaceAll("[^0-9]", "")));
+//			Elements linksOnPage = this.htmlDocument.body().select("li[class^=result-item]").select("div.listing_more")
+//					.select("a[href]").select("a.wt");
+//			LinkedHashMap<String, String> companies = new LinkedHashMap<>();
+//			int size = filter.getFirstResult() + filter.getPageSize() > linksOnPage.size() ? linksOnPage.size()
+//					: filter.getFirstResult() + filter.getPageSize();
+//			for (int i = filter.getFirstResult(); i < size; i++) {
+//				Element link = linksOnPage.get(i);
+//				companies.put(WebsiteEnum.GOLDEN_PAGES.getAddress() + link.attr("href"), link.text());
+//			}
+//			return companies;
+//		}
+//		return new LinkedHashMap<String, String>();
+//	}
 
 	private Document getHtmlDocumentFrom(String url) throws IOException, HttpStatusException {
 		setConnection(Jsoup.connect(url).userAgent(Constants.USER_AGENT));
-		if(getConnection().response().statusCode() == 200){ 
+		if (getConnection().response().statusCode() == 200) {
 			// 200 is the HTTP OK status code
 			System.out.println("\n**Visiting** Received web page at " + url);
 		}
-		if(getConnection().response().statusCode() == 404){
+		if (getConnection().response().statusCode() == 404) {
 			return null;
 		}
 		Document document = null;
-		try{
+		try {
 			document = getConnection().get();
-		}catch (HttpStatusException e) {
+		} catch (HttpStatusException e) {
 			LOGGER.log(Level.WARNING, "Url " + url + "does not exist.");
 		}
 		return document;
 	}
 
-	
 	/**
 	 * 
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public HashSet<Business> searchBusinessInfo(BusinessFilter filter, Category category) throws IOException {
+	public HashSet<Business> searchBusinessInfo(BusinessFilter filter, Category category, LinkedHashMap<String, String> linkCompanies) throws Exception {
 		HashSet<Business> businesses = new HashSet<Business>();
-		if(category != null && category.getUrl() != null){
-			HashSet<Category> subCategories = category.getSubcategories() != null ? category.getSubcategories() : findCategories(category.getUrl(), true);
-			for (Category subCategory : subCategories) {
-				LinkedHashMap<String, String> companies = findCompanies(filter, subCategory.getUrl());
-				for (Entry<String, String> company : companies.entrySet()) {
-					if(findBusinessMoreInfoElements(company.getKey())){
-						Business business = populateBusiness(subCategory);
-						businesses.add(business);
-					}
-				}
+		int toIndex = filter.getFirstResult() + filter.getPageSize() > linkCompanies.size()? linkCompanies.size() : filter.getFirstResult() + filter.getPageSize();
+		List<String> sublist = Collections.list(Collections.enumeration(linkCompanies.keySet())).subList(filter.getFirstResult(), toIndex);
+		for (String company : sublist) {
+			if (findBusinessMoreInfoElements(company)) {
+				Business business = populateBusiness(category);
+				businesses.add(business);
 			}
 		}
 		return businesses;
@@ -186,18 +167,21 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService{
 	private Business populateBusiness(Category subCategory) {
 		Element element = getElements().get(0);
 		String companyName = element.select("h1.name").text();
-		String phone = element.select("div.phone_contact").first() != null? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first()) : null;
+		String phone = element.select("div.phone_contact").first() != null
+				? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first())
+				: null;
 		String address = element.select("li.contact-address").text();
-		String mobile = element.select("#mobileinfo").first() != null? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
-		String email = element.select("#emailinfo").first() != null? searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
+		String mobile = element.select("#mobileinfo").first() != null
+				? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
+		String email = element.select("#emailinfo").first() != null
+				? searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
 		Business business = new Business(subCategory, companyName, phone, address, mobile, email);
-		
+
 		System.out.println(business.toString());
 		return business;
 	}
-	
+
 	public Set<String> searchForPattern(String pattern) {
-		// This method should only be used after a successful crawl.
 		if (this.htmlDocument == null) {
 			System.out.println("ERROR! Call crawl() before performing analysis on the document");
 		}
@@ -212,17 +196,46 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService{
 	}
 
 	public String searchForPatternInElement(String pattern, Element element) {
-		// This method should only be used after a successful crawl.
 		if (element == null) {
 			System.out.println("ERROR! Call crawl() before performing analysis on the document");
 		}
-		// System.out.println("Searching for the Pattern...");
 		String bodyText = element.text();
 		Matcher m = Pattern.compile(pattern).matcher(bodyText.toLowerCase());
 		if (m.find()) {
 			return m.group();
 		}
 		return null;
+	}
+	
+	@Override
+	public LinkedHashMap<String, String> findLinkCompanies(Category category) throws IOException {
+		HtmlUnitDriver webDriver = new HtmlUnitDriver();
+		webDriver.setJavascriptEnabled(true);
+		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		webDriver.get(category.getUrl());
+		WebDriverWait wait = new WebDriverWait(webDriver,100);
+		this.htmlDocument = Jsoup.parse(webDriver.getPageSource());
+		int results = Integer.parseInt(this.htmlDocument.body().select("div#results_header > span").text().replaceAll("[^0-9]", ""));
+		int pages = (int) (results > NUMBER_OF_RESULTS_PER_PAGE? Math.ceil(results/NUMBER_OF_RESULTS_PER_PAGE) : 0); 
+		for (int i = 0; i < pages; i++) {
+			wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));  
+			webDriver.findElement(By.id("result-next")).click();
+			int resultsOnPage = (i+2) * NUMBER_OF_RESULTS_PER_PAGE > results? results : (i+2) * NUMBER_OF_RESULTS_PER_PAGE;
+			wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//li[@class='result-item"+ resultsOnPage +"']")));
+		}
+		String html = webDriver.getPageSource();
+		this.htmlDocument = Jsoup.parse(html);
+		webDriver.quit();
+		if(this.htmlDocument != null){
+			Elements linksOnPage = this.htmlDocument.body().select("li[class^=result-item]").select("div.listing_more").select("a[href]").select("a.wt");
+			LinkedHashMap<String, String> companies = new LinkedHashMap<>();
+			for (int i = 0; i < linksOnPage.size(); i++) {
+				Element link = linksOnPage.get(i);
+				companies.put(WebsiteEnum.GOLDEN_PAGES.getAddress() + link.attr("href"), link.text());
+			}
+			return companies;
+		}
+		return new LinkedHashMap<>();
 	}
 
 	// GETTERS AND SETTERS

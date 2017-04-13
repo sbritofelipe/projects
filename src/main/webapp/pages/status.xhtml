@@ -6,11 +6,14 @@
 
 
 <body>
-	<p:ajaxStatus onstart="PF('statusDialog').show()" onsuccess="PF('statusDialog').hide()" />
 
-	<p:dialog widgetVar="statusDialog" modal="true" draggable="false"
-		closable="false" resizable="false" showHeader="false"
-		style="width: 100%">
+	<p:ajaxStatus onstart="PF('statusDialog').show()"
+		onsuccess="PF('statusDialog').hide()" />
+
+	<p:dialog widgetVar="statusDialog" modal="true" draggable="false" 
+		closable="false" resizable="false" showHeader="false" style="display:block; opacity: 1.0 !important;">
+		<p:graphicImage url="/images/ring.gif" />
 	</p:dialog>
+	
 </body>
 </html>
