@@ -221,7 +221,7 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 			wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));  
 			webDriver.findElement(By.id("result-next")).click();
 			int resultsOnPage = (i+2) * NUMBER_OF_RESULTS_PER_PAGE > results? results : (i+2) * NUMBER_OF_RESULTS_PER_PAGE;
-			wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//li[@class='result-item"+ resultsOnPage +"']")));
+			wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//li[@class='result-item"+ resultsOnPage +"']")));
 		}
 		String html = webDriver.getPageSource();
 		this.htmlDocument = Jsoup.parse(html);

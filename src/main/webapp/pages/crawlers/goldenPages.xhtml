@@ -6,16 +6,6 @@
 	template="../mainTemplate.xhtml">
 
 	<ui:define name="content">
-		<script type="text/javascript">  
-		    function start() {  
-		        statusDialog.show();  
-		    }  
-		
-		    function stop() {  
-		        statusDialog.hide();  
-		    }  
-		</script>
-		
 		<p:panel id="goldenPages" header="Golden Pages">
 			<div style="width: 80%; padding-left: 10%">
 				<h:form id="goldenPagesForm">
@@ -42,8 +32,9 @@
 							</h:panelGrid>
 						</h:panelGrid>
 					</p:fieldset>
-					<div style="height: 50px; text-align: right; padding-top: 5px;">
-						<p:commandButton value="Search" action="#{goldenPagesCrawlerController.search}" update=":goldenPagesForm"/>
+					<div style="height: 50px; padding-top: 5px;">
+						<p:commandButton value="Back" action="#{crawlerController.home}" immediate="true" style="float: left;"/>
+						<p:commandButton value="Search" action="#{goldenPagesCrawlerController.search}" update=":goldenPagesForm" style="float: right;"/>
 					</div>
 
 					<p:fieldset id="tablePanel">
@@ -56,11 +47,10 @@
 <!-- 							<p:ajax event="page" update=":goldenPagesForm" listener="#{goldenPagesCrawlerController.updateTable}"/> -->
 
 							<f:facet name="{Exporters}">
-								<p:commandLink onclick="Primefaces.monitorDownload(start, stop);" ajax="false">
+								<h:commandLink>
 									<p:graphicImage url="/images/csv.png" width="24" />
-									<p:dataExporter type="csv" target="businesses"
-										fileName="businesses" />
-								</p:commandLink>
+									<p:dataExporter type="csv" target="businesses" fileName="businesses" />
+								</h:commandLink>
 							</f:facet>
 							<p:column>
 								<f:facet name="header">
@@ -100,9 +90,7 @@
 							</p:column>
 						</p:dataTable>
 					</p:fieldset>
-					<div style="height: 50px; text-align: left; padding-top: 5px;">
-						<p:commandButton value="Back" action="#{crawlerController.home}" immediate="true"/>
-					</div>
+					
 				</h:form>
 			</div>
 		</p:panel>
