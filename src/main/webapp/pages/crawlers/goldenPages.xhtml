@@ -22,7 +22,7 @@
 						<h:panelGrid id="filtersPanel" columns="2">
 							<h:panelGrid id="gridCategoryPanel" columns="2">
 								<p:outputLabel value="Categories: " for="categories"/>
-								<p:selectOneMenu id="categories" value="#{goldenPagesCrawlerController.category}" style="width: 280px" required="true" requiredMessage="Choose one Category.">
+								<p:selectOneMenu id="categories" value="#{goldenPagesCrawlerController.category}" style="width: 280px" required="true" requiredMessage="Choose one Category">
 									<f:selectItem itemLabel="-- Select one category --" noSelectionOption="true"/>
 									<f:selectItems value="#{goldenPagesCrawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
 									<f:converter converterId="categoryConverter"/>
@@ -32,7 +32,7 @@
 							
 							<h:panelGrid id="gridSubcategoryPanel" columns="2">
 								<p:outputLabel value="Subcategories: " for="subcategories"/>
-								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px" required="true" requiredMessage="Choose one Subcategory.">
+								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px" required="true" requiredMessage="Choose one Subcategory">
 									<f:selectItem itemLabel="-- Select one subcategory --" noSelectionOption="true"/>
 									<f:selectItems value="#{goldenPagesCrawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
 									<f:converter converterId="categoryConverter"/>
