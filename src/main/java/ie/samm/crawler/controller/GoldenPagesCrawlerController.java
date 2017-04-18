@@ -25,7 +25,7 @@ import ie.samm.crawler.model.Category;
 import ie.samm.crawler.model.enumetaror.MessagesEnum;
 import ie.samm.crawler.model.enumetaror.WebsiteEnum;
 import ie.samm.crawler.service.GoldenPagesCrawlerService;
-
+ 
 @ManagedBean(name="goldenPagesCrawlerController")
 @ViewScoped
 public class GoldenPagesCrawlerController extends AbstractController{
