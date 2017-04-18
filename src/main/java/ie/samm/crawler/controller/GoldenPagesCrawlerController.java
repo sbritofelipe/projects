@@ -55,10 +55,10 @@ public class GoldenPagesCrawlerController extends AbstractController{
 			initVariables();
 			getCategories().addAll(getCrawlerService().findCategories(WebsiteEnum.GOLDEN_PAGES.getAddress(), false));
 			loadDataModel();
-			addSuccessMessage(getMessage(MessagesEnum.MSG_S001.name(), new String[]{""+getCategories().size(), "categories"}));
+			addSuccessMessage(getMessageService().getMessage(MessagesEnum.MSG_S001.name(), new Object[]{getCategories().size(), "categories"}));
 		} catch (Exception e) {
 			e.printStackTrace();
-			addErrorMessage(getMessage(MessagesEnum.MSG_E003.name(), new String[]{WebsiteEnum.GOLDEN_PAGES.getAddress()}));
+			addErrorMessage(getMessageService().getMessage(MessagesEnum.MSG_E003.name(), new Object[]{WebsiteEnum.GOLDEN_PAGES.getAddress()}));
 		}
 	}
 
@@ -75,9 +75,9 @@ public class GoldenPagesCrawlerController extends AbstractController{
 		try {
 			this.subcategories = new HashSet<Category>();
 			this.subcategories = getCategory() != null? getCrawlerService().findCategories(getCategory().getUrl(), true) : null;
-			addSuccessMessage(getMessage(MessagesEnum.MSG_S001.name(), new String[]{""+this.subcategories.size(), "subcategories"}));
+			addSuccessMessage(getMessageService().getMessage(MessagesEnum.MSG_S001.name(), new Object[]{this.subcategories.size(), "subcategories"}));
 		} catch (IOException e) {
-			addErrorMessage(getMessage(MessagesEnum.MSG_E002.name(), null));
+			addErrorMessage(getMessageService().getMessage(MessagesEnum.MSG_E002.name(), new Object[]{}));
 		} catch (Exception e) {
 			addErrorMessage(e.getMessage());
 		}
@@ -90,7 +90,7 @@ public class GoldenPagesCrawlerController extends AbstractController{
 			DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("goldenPagesForm:businesses");
 			dataTable.reset();
 		} catch (Exception e) {
-			addErrorMessage(getMessage(MessagesEnum.MSG_E001.name(), null) + e.getMessage());
+			addErrorMessage(getMessageService().getMessage(MessagesEnum.MSG_E001.name(), new Object[]{}) + e.getMessage());
 		}
 	}
 	
@@ -113,7 +113,7 @@ public class GoldenPagesCrawlerController extends AbstractController{
 						Collections.sort(getBusinesses(), new LazySorter(sortField, sortOrder));
 					}
 				} catch (Exception e) {
-					addErrorMessage(getMessage(MessagesEnum.MSG_E003.name(), new String[]{WebsiteEnum.GOLDEN_PAGES.getAddress()}));
+					addErrorMessage(getMessageService().getMessage(MessagesEnum.MSG_E003.name(), new Object[]{WebsiteEnum.GOLDEN_PAGES.getAddress()}));
 				}
 		    	//sort
 		        return businesses;

@@ -1,19 +1,15 @@
 package ie.samm.crawler.controller;
 
 import javax.faces.application.FacesMessage;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.context.FacesContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import ie.samm.crawler.service.MessageService;
 
 public abstract class AbstractController {
 	
-	@Autowired
-	protected MessageSource messageSource;
-	
-	protected String getMessage(String messageName, String...params){
-		return messageSource.getMessage(messageName, params, null);
-	}
+	@ManagedProperty("#{messageServiceImpl}")
+	private MessageService messageService;
 	
 	protected void addSuccessMessage(String msg){
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, msg, null));
@@ -21,6 +17,20 @@ public abstract class AbstractController {
 	
 	protected void addErrorMessage(String msg){
 		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
+	}
+
+	/**
+	 * @return the messageService
+	 */
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	/**
+	 * @param messageService the messageService to set
+	 */
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
 	}
 
 }
