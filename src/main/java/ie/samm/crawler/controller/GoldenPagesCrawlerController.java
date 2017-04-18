@@ -53,8 +53,8 @@ public class GoldenPagesCrawlerController extends AbstractController{
 		try {
 			initVariables();
 			getCategories().addAll(getCrawlerService().findCategories(WebsiteEnum.GOLDEN_PAGES.getAddress(), false));
+			loadDataModel();
 			addSuccessMessage(getCategories().size() + " categories found.");
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			addErrorMessage("Error while scraping " + WebsiteEnum.GOLDEN_PAGES.getAddress());
@@ -76,17 +76,18 @@ public class GoldenPagesCrawlerController extends AbstractController{
 			this.subcategories = getCategory() != null? getCrawlerService().findCategories(getCategory().getUrl(), true) : null;
 			addSuccessMessage(this.subcategories.size() + " subcategories found.");
 		} catch (IOException e) {
-			addErrorMessage("Error.");
+			addErrorMessage("Error. Please verify your internet connection.");
+		} catch (Exception e) {
+			addErrorMessage("");
 		}
 	}
 	
 	public void search(){
 		try {
-			linksCompanies = crawlerService.findLinkCompanies(getSubcategory());
+			linksCompanies = crawlerService.findLinkCompanies(this.subcategory);
 			businessFilter.setRowCount(linksCompanies.size());
 			DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot().findComponent("goldenPagesForm:businesses");
 			dataTable.reset();
-			loadDataModel();	
 		} catch (Exception e) {
 			addErrorMessage("Error finding companies." + e.getMessage());
 			e.printStackTrace();

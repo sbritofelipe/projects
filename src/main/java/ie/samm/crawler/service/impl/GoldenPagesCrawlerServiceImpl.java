@@ -24,6 +24,7 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import ie.samm.crawler.model.Business;
 import ie.samm.crawler.model.BusinessFilter;
@@ -56,10 +57,7 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public HashSet<Category> findCategories(String url, boolean subcategory) throws Exception {
 		this.htmlDocument = getHtmlDocumentFrom(url);// Jsoup.parse(html);
-		// if(getConnection().response().statusCode() == 200){
-		// 200 is the HTTP OK status code indicating that everything is great.
 		System.out.println("\n**Visiting** Received web page at " + url);
-		// }
 
 		Elements linksOnPage = new Elements();
 		HashSet objects = new HashSet();
@@ -91,44 +89,7 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 			return false;
 		}
 	}
-
-//	public LinkedHashMap<String, String> findCompanies(BusinessFilter filter, String url) throws IOException {
-//		if (filter.getFirstResult() > NUMBER_OF_RESULTS_PER_PAGE) {
-//			HtmlUnitDriver webDriver = new HtmlUnitDriver();
-//			webDriver.setJavascriptEnabled(true);
-//			webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-//			webDriver.get(url);
-//			WebDriverWait wait = new WebDriverWait(webDriver, 30);
-//			for (int i = 1; i < filter.getFirstResult() / filter.getPageSize(); i++) {
-//				((JavascriptExecutor) webDriver).executeScript("arguments[0].scrollIntoView(true);",
-//						webDriver.findElement(By.id("result-next")));
-//				wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));
-//				webDriver.findElement(By.id("result-next")).click();
-//				wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id='result-next']")));
-//			}
-//			String html = webDriver.getPageSource();
-//			this.htmlDocument = Jsoup.parse(html);
-//			webDriver.close();
-//		} else {
-//			this.htmlDocument = getHtmlDocumentFrom(url);
-//		}
-//		if (this.htmlDocument != null) {
-//			String resultspan = this.htmlDocument.body().select("div#results_header > span").text();
-//			filter.setRowCount(Integer.parseInt(resultspan.replaceAll("[^0-9]", "")));
-//			Elements linksOnPage = this.htmlDocument.body().select("li[class^=result-item]").select("div.listing_more")
-//					.select("a[href]").select("a.wt");
-//			LinkedHashMap<String, String> companies = new LinkedHashMap<>();
-//			int size = filter.getFirstResult() + filter.getPageSize() > linksOnPage.size() ? linksOnPage.size()
-//					: filter.getFirstResult() + filter.getPageSize();
-//			for (int i = filter.getFirstResult(); i < size; i++) {
-//				Element link = linksOnPage.get(i);
-//				companies.put(WebsiteEnum.GOLDEN_PAGES.getAddress() + link.attr("href"), link.text());
-//			}
-//			return companies;
-//		}
-//		return new LinkedHashMap<String, String>();
-//	}
-
+	
 	private Document getHtmlDocumentFrom(String url) throws IOException, HttpStatusException {
 		setConnection(Jsoup.connect(url).userAgent(Constants.USER_AGENT));
 		if (getConnection().response().statusCode() == 200) {
@@ -151,14 +112,16 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 	 * 
 	 * @throws IOException
 	 */
-	public HashSet<Business> searchBusinessInfo(BusinessFilter filter, Category category, LinkedHashMap<String, String> linkCompanies) throws Exception {
+	public HashSet<Business> searchBusinessInfo(BusinessFilter filter, Category subcategory, LinkedHashMap<String, String> linkCompanies) throws Exception {
 		HashSet<Business> businesses = new HashSet<Business>();
-		int toIndex = filter.getFirstResult() + filter.getPageSize() > linkCompanies.size()? linkCompanies.size() : filter.getFirstResult() + filter.getPageSize();
-		List<String> sublist = Collections.list(Collections.enumeration(linkCompanies.keySet())).subList(filter.getFirstResult(), toIndex);
-		for (String company : sublist) {
-			if (findBusinessMoreInfoElements(company)) {
-				Business business = populateBusiness(category);
-				businesses.add(business);
+		if(subcategory != null && !StringUtils.isEmpty(subcategory.getUrl())){
+			int toIndex = filter.getFirstResult() + filter.getPageSize() > linkCompanies.size()? linkCompanies.size() : filter.getFirstResult() + filter.getPageSize();
+			List<String> sublist = Collections.list(Collections.enumeration(linkCompanies.keySet())).subList(filter.getFirstResult(), toIndex);
+			for (String company : sublist) {
+				if (findBusinessMoreInfoElements(company)) {
+					Business business = populateBusiness(subcategory);
+					businesses.add(business);
+				}
 			}
 		}
 		return businesses;
@@ -167,15 +130,12 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 	private Business populateBusiness(Category subCategory) {
 		Element element = getElements().get(0);
 		String companyName = element.select("h1.name").text();
-		String phone = element.select("div.phone_contact").first() != null
-				? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first())
-				: null;
+		String phone = element.select("div.phone_contact").first() != null? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("div.phone_contact").first()): null;
 		String address = element.select("li.contact-address").text();
-		String mobile = element.select("#mobileinfo").first() != null
-				? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
-		String email = element.select("#emailinfo").first() != null
-				? searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
-		Business business = new Business(subCategory, companyName, phone, address, mobile, email);
+		String mobile = element.select("#mobileinfo").first() != null? searchForPatternInElement(Constants.REGEX_TELEPHONE, element.select("#mobileinfo").first()) : null;
+		String email = element.select("#emailinfo").first() != null? searchForPatternInElement(Constants.REGEX_EMAIL, element.select("#emailinfo").first()) : null;
+		String website = element.select("#homepageinfo").first() != null? element.select("#homepageinfo").first().text() : null;
+		Business business = new Business(subCategory, companyName, phone, address, mobile, email, website);
 
 		System.out.println(business.toString());
 		return business;
@@ -211,9 +171,9 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 	public LinkedHashMap<String, String> findLinkCompanies(Category category) throws IOException {
 		HtmlUnitDriver webDriver = new HtmlUnitDriver();
 		webDriver.setJavascriptEnabled(true);
-		webDriver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 		webDriver.get(category.getUrl());
-		WebDriverWait wait = new WebDriverWait(webDriver,100);
+		WebDriverWait wait = new WebDriverWait(webDriver, 5);
 		this.htmlDocument = Jsoup.parse(webDriver.getPageSource());
 		int results = Integer.parseInt(this.htmlDocument.body().select("div#results_header > span").text().replaceAll("[^0-9]", ""));
 		int pages = (int) (results > NUMBER_OF_RESULTS_PER_PAGE? Math.ceil(results/NUMBER_OF_RESULTS_PER_PAGE) : 0); 
@@ -232,6 +192,9 @@ public class GoldenPagesCrawlerServiceImpl implements GoldenPagesCrawlerService 
 			for (int i = 0; i < linksOnPage.size(); i++) {
 				Element link = linksOnPage.get(i);
 				companies.put(WebsiteEnum.GOLDEN_PAGES.getAddress() + link.attr("href"), link.text());
+				if(i + 1 == results){
+					break;
+				}
 			}
 			return companies;
 		}

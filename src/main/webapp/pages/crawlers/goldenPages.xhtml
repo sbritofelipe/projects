@@ -6,15 +6,23 @@
 	template="../mainTemplate.xhtml">
 
 	<ui:define name="content">
+	<style type="text/css">
+		/*  data-exporter symbol shown in the upper right corner of the datatable */
+
+		.ui-paginator a, .exporter .ui-datatable-header a {
+		    float: right;
+		    margin-right: 5px;
+		}
+	</style>
 		<p:panel id="goldenPages" header="Golden Pages">
-			<div style="width: 80%; padding-left: 10%">
+			<div style="width: 90%; padding-left: 5%">
 				<h:form id="goldenPagesForm">
 					<p:fieldset id="goldenPagesFds">
 						<h3>Filters</h3>
 						<h:panelGrid id="filtersPanel" columns="2">
 							<h:panelGrid id="gridCategoryPanel" columns="2">
 								<p:outputLabel value="Categories: " for="categories"/>
-								<p:selectOneMenu id="categories" value="#{goldenPagesCrawlerController.category}" style="width: 280px" required="true">
+								<p:selectOneMenu id="categories" value="#{goldenPagesCrawlerController.category}" style="width: 280px" required="true" requiredMessage="Choose one Category.">
 									<f:selectItem itemLabel="-- Select one category --" noSelectionOption="true"/>
 									<f:selectItems value="#{goldenPagesCrawlerController.categories}" var="category" itemLabel="#{category.name}" itemValue="#{category}"/>
 									<f:converter converterId="categoryConverter"/>
@@ -24,7 +32,7 @@
 							
 							<h:panelGrid id="gridSubcategoryPanel" columns="2">
 								<p:outputLabel value="Subcategories: " for="subcategories"/>
-								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px" required="true">
+								<p:selectOneMenu id="subcategories" value="#{goldenPagesCrawlerController.subcategory}" style="width: 280px" required="true" requiredMessage="Choose one Subcategory.">
 									<f:selectItem itemLabel="-- Select one subcategory --" noSelectionOption="true"/>
 									<f:selectItems value="#{goldenPagesCrawlerController.subcategories}" var="subcategory" itemLabel="#{subcategory.name}" itemValue="#{subcategory}"/>
 									<f:converter converterId="categoryConverter"/>
@@ -41,52 +49,63 @@
 						<h3>Businesses</h3>
 						<p:dataTable id="businesses" value="#{goldenPagesCrawlerController.dataModel}" widgetVar="businessesTable"
 							var="business" emptyMessage="No businesses found." paginator="true" lazy="true" 
-							rows="10" paginatorPosition="bottom" rowsPerPageTemplate="5,10,15" first="0"
+							rows="10" paginatorPosition="bottom" rowsPerPageTemplate="5,10,15" first="0" tableStyle="table-layout: auto;"
 							paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown} {Exporters}">
-							
-<!-- 							<p:ajax event="page" update=":goldenPagesForm" listener="#{goldenPagesCrawlerController.updateTable}"/> -->
 
 							<f:facet name="{Exporters}">
 								<h:commandLink>
-									<p:graphicImage url="/images/csv.png" width="24" />
+									<p:graphicImage url="/images/csv_export.png" width="24" />
 									<p:dataExporter type="csv" target="businesses" fileName="businesses" />
 								</h:commandLink>
 							</f:facet>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Category" />
 								</f:facet>
 								<h:outputText value="#{business.category.name}" />
 							</p:column>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Company" />
 								</f:facet>
 								<h:outputText value="#{business.company}" />
 							</p:column>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Phone" />
 								</f:facet>
 								<h:outputText value="#{business.phone}" />
 							</p:column>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Address" />
 								</f:facet>
 								<h:outputText value="#{business.address}" />
 							</p:column>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Mobile" />
 								</f:facet>
 								<h:outputText value="#{business.mobile}" />
 							</p:column>
+
 							<p:column>
 								<f:facet name="header">
 									<h:outputText value="Email" />
 								</f:facet>
 								<h:outputText value="#{business.email}" />
+							</p:column>
+							
+							<p:column>
+								<f:facet name="header">
+									<h:outputText value="Website" />
+								</f:facet>
+								<h:outputText value="#{business.website}" />
 							</p:column>
 						</p:dataTable>
 					</p:fieldset>

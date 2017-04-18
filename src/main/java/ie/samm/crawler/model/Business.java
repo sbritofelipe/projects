@@ -27,18 +27,21 @@ public class Business extends Entity{
 	private String mobile;
 	
 	private String email;
+	
+	private String website;
 	 
 	public Business(){
 		
 	}
 	
-	public Business(Category category, String company, String phone, String address, String mobile, String email) {
+	public Business(Category category, String company, String phone, String address, String mobile, String email, String website) {
 		this.category = category;
 		this.company = company;
 		this.phone = phone;
 		this.address = address;
 		this.mobile = mobile;
 		this.email = email;
+		this.website = website;
 	}
 	
 	/**
@@ -220,6 +223,20 @@ public class Business extends Entity{
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @return the website
+	 */
+	public String getWebsite() {
+		return website;
+	}
+
+	/**
+	 * @param website the website to set
+	 */
+	public void setWebsite(String website) {
+		this.website = website;
 	}
 	
 }
