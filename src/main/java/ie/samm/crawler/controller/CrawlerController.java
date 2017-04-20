@@ -23,6 +23,8 @@ public class CrawlerController extends AbstractController{
 			if ((WebsiteEnum.GOLDEN_PAGES.getAddress()).replace(Constants.HTTPS_PROTOCOL, Constants.HTTP_PROTOCOL).equals(getUrl()) ||
 				(WebsiteEnum.GOLDEN_PAGES.getAddress()).equals(getUrl())) {
 				return "goldenPages";
+			}else{
+				addErrorMessage("Invalid URL.");
 			}
 		}else{
 			addErrorMessage("Invalid URL.");
